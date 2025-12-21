@@ -54,6 +54,7 @@
                     @error('nama')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                    <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Nama kategori harus unik dan maksimal 100 karakter</p>
                 </div>
 
                 <!-- Urutan -->
@@ -81,6 +82,7 @@
                     @error('deskripsi')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                    <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Deskripsi akan ditampilkan di halaman kategori (opsional)</p>
                 </div>
 
                 <!-- Icon -->
@@ -109,6 +111,7 @@
                     @error('is_active')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                    <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Kategori tidak aktif tidak akan ditampilkan</p>
                 </div>
             </div>
 

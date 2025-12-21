@@ -178,59 +178,100 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Harga <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" name="harga" value="{{ old('harga', $produk->harga) }}" required min="0"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('harga') border-red-500 @enderror">
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">Rp</span>
+                                <input type="text" name="harga" id="harga" value="{{ old('harga', number_format($produk->harga, 0, ',', '.')) }}" required
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('harga') border-red-500 @enderror"
+                                    oninput="formatRupiah(this)">
+                            </div>
                             @error('harga')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Harga jual normal produk</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Harga Diskon
                             </label>
-                            <input type="number" name="harga_diskon" value="{{ old('harga_diskon', $produk->harga_diskon) }}" min="0"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('harga_diskon') border-red-500 @enderror">
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">Rp</span>
+                                <input type="text" name="harga_diskon" id="harga_diskon" value="{{ old('harga_diskon', $produk->harga_diskon ? number_format($produk->harga_diskon, 0, ',', '.') : '') }}"
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('harga_diskon') border-red-500 @enderror"
+                                    oninput="formatRupiah(this)">
+                            </div>
                             @error('harga_diskon')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Kosongkan jika tidak ada diskon</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Stok <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" name="stok" value="{{ old('stok', $produk->stok) }}" required min="0"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('stok') border-red-500 @enderror">
+                            <div class="relative">
+                                <input type="number" name="stok" value="{{ old('stok', $produk->stok) }}" required min="0"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('stok') border-red-500 @enderror">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">pcs</span>
+                            </div>
                             @error('stok')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Jumlah stok tersedia</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Min Stok <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" name="min_stok" value="{{ old('min_stok', $produk->min_stok) }}" required min="0"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('min_stok') border-red-500 @enderror">
+                            <div class="relative">
+                                <input type="number" name="min_stok" value="{{ old('min_stok', $produk->min_stok) }}" required min="0"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('min_stok') border-red-500 @enderror">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">pcs</span>
+                            </div>
                             @error('min_stok')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Batas peringatan stok rendah</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Berat (gram) <span class="text-red-500">*</span>
+                                Berat <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" step="0.01" name="berat" value="{{ old('berat', $produk->berat) }}" required min="0"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('berat') border-red-500 @enderror"
-                                placeholder="0">
+                            <div class="relative">
+                                <input type="number" step="0.01" name="berat" value="{{ old('berat', $produk->berat) }}" required min="0"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('berat') border-red-500 @enderror"
+                                    placeholder="0">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">gram</span>
+                            </div>
                             @error('berat')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Untuk kalkulasi ongkir</p>
                         </div>
                     </div>
                 </div>
+
+                <script>
+                    function formatRupiah(input) {
+                        let value = input.value.replace(/[^\d]/g, '');
+                        if (value === '') {
+                            input.value = '';
+                            return;
+                        }
+                        input.value = new Intl.NumberFormat('id-ID').format(value);
+                    }
+                    
+                    // Before form submit, convert formatted price back to number
+                    document.querySelector('form').addEventListener('submit', function() {
+                        const harga = document.getElementById('harga');
+                        const hargaDiskon = document.getElementById('harga_diskon');
+                        if (harga) harga.value = harga.value.replace(/\./g, '');
+                        if (hargaDiskon) hargaDiskon.value = hargaDiskon.value.replace(/\./g, '');
+                    });
+                </script>
 
                 <!-- Spesifikasi Teknis -->
                 <div class="bg-white rounded-xl shadow-md p-6 mb-6">

@@ -105,20 +105,24 @@
                                 Nama Lengkap <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="name" value="{{ old('name', auth()->user()->name) }}" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-500 @enderror">
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-500 @enderror"
+                                placeholder="Nama lengkap Anda">
                             @error('name')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Nama akan ditampilkan di header admin</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Email <span class="text-red-500">*</span>
                             </label>
                             <input type="email" name="email" value="{{ old('email', auth()->user()->email) }}" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('email') border-red-500 @enderror">
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('email') border-red-500 @enderror"
+                                placeholder="admin@example.com">
                             @error('email')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Email untuk login dan notifikasi</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -130,6 +134,7 @@
                             @error('telepon')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Format: 08xxxxxxxxxx (opsional)</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -163,6 +168,7 @@
                             @error('password')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Minimal 8 karakter dengan kombinasi huruf dan angka</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -171,6 +177,7 @@
                             <input type="password" name="password_confirmation"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="Ulangi password baru">
+                            <p class="text-gray-500 text-xs mt-1"><i class="fas fa-info-circle mr-1"></i>Harus sama dengan password baru</p>
                         </div>
                     </div>
                 </div>
