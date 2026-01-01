@@ -132,18 +132,18 @@
                     :class="{ 'rotate-180': open }"></i>
             </button>
             <div x-show="open" x-collapse :class="{ 'hidden': sidebarCollapsed }" class="ml-9 mt-1 space-y-1">
-                <a href="{{ route('admin.tentang-kami.index') }}"
+                {{-- <a href="{{ route('admin.tentang-kami.index') }}"
                     class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-primary-50 hover:text-primary-600 {{ request()->routeIs('admin.tentang-kami.*') ? 'bg-primary-100 text-primary-600' : '' }}">
                     <i class="fas fa-info-circle mr-2"></i>Tentang Kami
-                </a>
+                </a> --}}
                 <a href="{{ route('admin.kontak.index') }}"
                     class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-primary-50 hover:text-primary-600 {{ request()->routeIs('admin.kontak.*') ? 'bg-primary-100 text-primary-600' : '' }}">
                     <i class="fas fa-phone mr-2"></i>Kontak
                 </a>
-                <a href="{{ route('admin.kebijakan-privasi.index') }}"
+                {{-- <a href="{{ route('admin.kebijakan-privasi.index') }}"
                     class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-primary-50 hover:text-primary-600 {{ request()->routeIs('admin.kebijakan-privasi.*') ? 'bg-primary-100 text-primary-600' : '' }}">
                     <i class="fas fa-shield-alt mr-2"></i>Kebijakan Privasi
-                </a>
+                </a> --}}
             </div>
         </div>
 

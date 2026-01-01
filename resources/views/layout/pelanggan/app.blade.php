@@ -127,6 +127,9 @@
 
         </div>
     </div>
+
+    {{-- Additional Scripts Stack --}}
+    @stack('scripts')
 </body>
 
 </html>

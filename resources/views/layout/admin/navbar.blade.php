@@ -13,7 +13,7 @@
         <div class="flex items-center space-x-4">
 
             <!-- Notifikasi -->
-            <div x-data="{ open: false }" class="relative">
+            {{-- <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open" class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
                     <i class="fas fa-bell text-gray-600 text-lg"></i>
                     <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -75,7 +75,7 @@
                         </a>
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Profil Pengguna -->
             <div x-data="{ open: false }" class="relative">

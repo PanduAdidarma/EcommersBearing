@@ -3,7 +3,7 @@
 @section('title', 'Home - Bearing Shop')
 
 @section('content')
-   
+
     <div class="relative rounded-2xl shadow-xl mb-8 bg-linear-to-r from-primary-600 via-primary-700 to-primary-900">
 
         <!-- Pembungkus khusus SVG agar overflow-nya tidak mengganggu dropdown -->
@@ -98,7 +98,34 @@
                 <p class="text-gray-600">Pilih kategori sesuai kebutuhan Anda</p>
             </div>
         </div>
-        <div class="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
+        
+        <!-- Mobile: Horizontal Scroll -->
+        <div class="md:hidden overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+            <div class="flex gap-3" style="width: max-content;">
+                @forelse($kategoris as $kategori)
+                    <a href="{{ route('pelanggan.produk.index', ['kategori_id' => $kategori->id]) }}"
+                        class="bg-white rounded-xl p-4 shadow-md hover:shadow-xl transition-all group flex-shrink-0 w-28">
+                        <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-3 mx-auto group-hover:bg-primary-200 transition-all">
+                            @if($kategori->icon)
+                                <img src="{{ asset('storage/' . $kategori->icon) }}" alt="{{ $kategori->nama }}" class="w-8 h-8 object-contain">
+                            @else
+                                <i class="fas fa-cog text-primary-600 text-xl"></i>
+                            @endif
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-center mb-1 text-xs line-clamp-2">{{ $kategori->nama }}</h3>
+                        <p class="text-gray-500 text-[10px] text-center">{{ $kategori->produks_count ?? $kategori->produks->count() }} produk</p>
+                    </a>
+                @empty
+                    <div class="text-center py-8 text-gray-500 w-full">
+                        <i class="fas fa-box-open text-4xl mb-2"></i>
+                        <p>Belum ada kategori</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+        
+        <!-- Desktop: Grid -->
+        <div class="hidden md:grid md:grid-cols-3 lg:grid-cols-6 gap-4">
             @forelse($kategoris as $kategori)
                 <a href="{{ route('pelanggan.produk.index', ['kategori_id' => $kategori->id]) }}"
                     class="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all group">
@@ -134,7 +161,29 @@
                     Lihat Semua <i class="fas fa-arrow-right ml-2"></i>
                 </a>
             </div>
-            <div class="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
+            
+            <!-- Mobile: Horizontal Scroll -->
+            <div class="md:hidden overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+                <div class="flex gap-3" style="width: max-content;">
+                    @foreach($merksPremium as $merk)
+                        <a href="{{ route('pelanggan.produk.index', ['merk_id' => $merk->id]) }}"
+                            class="bg-white rounded-xl p-4 shadow-md hover:shadow-xl transition-all group text-center flex-shrink-0 w-28">
+                            @if($merk->logo)
+                                <img src="{{ asset('storage/' . $merk->logo) }}" alt="{{ $merk->nama }}" 
+                                    class="h-8 object-contain mx-auto mb-2 group-hover:scale-110 transition-transform">
+                            @else
+                                <div class="h-8 flex items-center justify-center mb-2">
+                                    <span class="text-sm font-bold text-gray-700">{{ $merk->nama }}</span>
+                                </div>
+                            @endif
+                            <h3 class="font-semibold text-gray-900 text-xs line-clamp-1">{{ $merk->nama }}</h3>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            
+            <!-- Desktop: Grid -->
+            <div class="hidden md:grid md:grid-cols-3 lg:grid-cols-6 gap-4">
                 @foreach($merksPremium as $merk)
                     <a href="{{ route('pelanggan.produk.index', ['merk_id' => $merk->id]) }}"
                         class="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all group text-center">

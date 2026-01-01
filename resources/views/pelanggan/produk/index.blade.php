@@ -9,9 +9,101 @@
         <p class="text-primary-100">Temukan bearing berkualitas tinggi dari berbagai brand ternama</p>
     </div>
 
+    <!-- Mobile Filter Button -->
+    <div class="lg:hidden mb-4">
+        <button type="button" id="openFilterModal" 
+            class="w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-50 transition-all flex items-center justify-center shadow-md">
+            <i class="fas fa-filter mr-2 text-primary-600"></i>
+            Filter Produk
+            @if(request('search') || request('kategori_id') || request('merk_id') || request('sort'))
+                <span class="ml-2 bg-primary-600 text-white text-xs px-2 py-0.5 rounded-full">Aktif</span>
+            @endif
+        </button>
+    </div>
+
+    <!-- Mobile Filter Modal -->
+    <div id="filterModal" class="fixed inset-0 z-50 hidden lg:hidden">
+        <!-- Backdrop -->
+        <div id="filterModalBackdrop" class="absolute inset-0 bg-black/60 transition-opacity"></div>
+        
+        <!-- Modal Content -->
+        <div id="filterModalContent" class="absolute inset-x-0 bottom-0 bg-white rounded-t-3xl max-h-[85vh] overflow-y-auto transform translate-y-full transition-transform duration-300">
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-3xl">
+                <h3 class="font-bold text-gray-900 text-lg flex items-center">
+                    <i class="fas fa-filter mr-2 text-primary-600"></i>Filter Produk
+                </h3>
+                <button type="button" id="closeFilterModal" class="text-gray-500 hover:text-gray-700 p-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <form action="{{ route('pelanggan.produk.index') }}" method="GET" id="filterFormMobile" class="p-6">
+                <!-- Pencarian -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Cari Produk</label>
+                    <div class="relative">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama produk..."
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Filter Kategori -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Kategori</label>
+                    <select name="kategori_id" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500">
+                        <option value="">Semua Kategori</option>
+                        @foreach ($kategoris as $kategori)
+                            <option value="{{ $kategori->id }}" {{ request('kategori_id') == $kategori->id ? 'selected' : '' }}>
+                                {{ $kategori->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Filter Brand -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Brand</label>
+                    <select name="merk_id" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500">
+                        <option value="">Semua Brand</option>
+                        @foreach ($merks as $merk)
+                            <option value="{{ $merk->id }}" {{ request('merk_id') == $merk->id ? 'selected' : '' }}>
+                                {{ $merk->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Urutkan -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Urutkan</label>
+                    <select name="sort" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500">
+                        <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Terbaru</option>
+                        <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Harga Terendah</option>
+                        <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Harga Tertinggi</option>
+                        <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Terpopuler</option>
+                    </select>
+                </div>
+
+                <!-- Tombol Filter -->
+                <div class="space-y-3 pt-4 border-t border-gray-200">
+                    <button type="submit" class="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold hover:bg-primary-700 transition-all">
+                        <i class="fas fa-check mr-2"></i>Terapkan Filter
+                    </button>
+                    <a href="{{ route('pelanggan.produk.index') }}" 
+                        class="block w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-200 transition-all text-center">
+                        <i class="fas fa-redo mr-2"></i>Reset Filter
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="grid lg:grid-cols-4 gap-6">
-        <!-- Sidebar Filter -->
-        <div class="lg:col-span-1">
+        <!-- Sidebar Filter (Desktop Only) -->
+        <div class="hidden lg:block lg:col-span-1">
             <form action="{{ route('pelanggan.produk.index') }}" method="GET" id="filterForm">
                 <div class="bg-white rounded-xl shadow-md p-6 sticky top-6">
                     <h3 class="font-bold text-gray-900 mb-4 flex items-center">
@@ -197,3 +289,51 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterModal = document.getElementById('filterModal');
+        const filterModalBackdrop = document.getElementById('filterModalBackdrop');
+        const filterModalContent = document.getElementById('filterModalContent');
+        const openFilterModal = document.getElementById('openFilterModal');
+        const closeFilterModal = document.getElementById('closeFilterModal');
+
+        // Open modal
+        openFilterModal.addEventListener('click', function() {
+            filterModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // Trigger animation
+            setTimeout(() => {
+                filterModalBackdrop.classList.add('opacity-100');
+                filterModalContent.classList.remove('translate-y-full');
+            }, 10);
+        });
+
+        // Close modal function
+        function closeModal() {
+            filterModalBackdrop.classList.remove('opacity-100');
+            filterModalContent.classList.add('translate-y-full');
+            
+            setTimeout(() => {
+                filterModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        // Close modal on button click
+        closeFilterModal.addEventListener('click', closeModal);
+
+        // Close modal on backdrop click
+        filterModalBackdrop.addEventListener('click', closeModal);
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !filterModal.classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+    });
+</script>
+@endpush
