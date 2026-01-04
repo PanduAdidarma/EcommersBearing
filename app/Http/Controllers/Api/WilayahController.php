@@ -9,35 +9,24 @@ use Illuminate\Support\Facades\Cache;
 
 class WilayahController extends Controller
 {
-    protected $baseUrl = 'https://sipedas.pertanian.go.id/api/wilayah';
-    protected $tahun = 2025;
+    protected $baseUrl = 'https://wilayah.id/api';
 
     /**
-     * Transform API response from {kode: nama} to [{kode, nama}]
+     * Transform API response from wilayah.id format to consistent format
+     * wilayah.id returns: { data: [{ code, name }], meta: {...} }
      */
-    private function transformResponse($data, $isNested = false)
+    private function transformResponse($response)
     {
-        // Jika response nested (kota/kecamatan), ambil dari key 'output'
-        if ($isNested && isset($data['output'])) {
-            $data = $data['output'];
-        }
-
-        if (!is_array($data)) {
+        if (!isset($response['data']) || !is_array($response['data'])) {
             return [];
         }
 
-        $result = [];
-        foreach ($data as $kode => $nama) {
-            // Skip jika bukan data wilayah (misalnya key metadata)
-            if (!is_string($nama)) {
-                continue;
-            }
-            $result[] = [
-                'kode' => $kode,
-                'nama' => $nama
+        return collect($response['data'])->map(function ($item) {
+            return [
+                'kode' => $item['code'],
+                'nama' => $item['name']
             ];
-        }
-        return $result;
+        })->toArray();
     }
 
     /**
@@ -45,15 +34,13 @@ class WilayahController extends Controller
      */
     public function provinsi()
     {
-        $cacheKey = "wilayah_provinsi_{$this->tahun}";
+        $cacheKey = "wilayah_provinsi";
         
         $data = Cache::remember($cacheKey, 60 * 60 * 24, function () {
-            $response = Http::timeout(10)->get("{$this->baseUrl}/list_pro", [
-                'tahun' => $this->tahun
-            ]);
+            $response = Http::timeout(10)->get("{$this->baseUrl}/provinces.json");
             
             if ($response->successful()) {
-                return $this->transformResponse($response->json(), false);
+                return $this->transformResponse($response->json());
             }
             
             return [];
@@ -73,16 +60,13 @@ class WilayahController extends Controller
             return response()->json(['error' => 'Kode provinsi diperlukan'], 400);
         }
 
-        $cacheKey = "wilayah_kota_{$this->tahun}_{$provinsiKode}";
+        $cacheKey = "wilayah_kota_{$provinsiKode}";
         
         $data = Cache::remember($cacheKey, 60 * 60 * 24, function () use ($provinsiKode) {
-            $response = Http::timeout(10)->get("{$this->baseUrl}/list_kab", [
-                'tahun' => $this->tahun,
-                'pro' => $provinsiKode
-            ]);
+            $response = Http::timeout(10)->get("{$this->baseUrl}/regencies/{$provinsiKode}.json");
             
             if ($response->successful()) {
-                return $this->transformResponse($response->json(), true);
+                return $this->transformResponse($response->json());
             }
             
             return [];
@@ -92,28 +76,49 @@ class WilayahController extends Controller
     }
 
     /**
-     * Get list of kecamatan by province and city code
+     * Get list of kecamatan by regency/city code
      */
     public function kecamatan(Request $request)
     {
-        $provinsiKode = $request->query('pro');
         $kotaKode = $request->query('kab');
         
-        if (!$provinsiKode || !$kotaKode) {
-            return response()->json(['error' => 'Kode provinsi dan kota diperlukan'], 400);
+        if (!$kotaKode) {
+            return response()->json(['error' => 'Kode kabupaten/kota diperlukan'], 400);
         }
 
-        $cacheKey = "wilayah_kecamatan_{$this->tahun}_{$provinsiKode}_{$kotaKode}";
+        $cacheKey = "wilayah_kecamatan_{$kotaKode}";
         
-        $data = Cache::remember($cacheKey, 60 * 60 * 24, function () use ($provinsiKode, $kotaKode) {
-            $response = Http::timeout(10)->get("{$this->baseUrl}/list_kec", [
-                'tahun' => $this->tahun,
-                'pro' => $provinsiKode,
-                'kab' => $kotaKode
-            ]);
+        $data = Cache::remember($cacheKey, 60 * 60 * 24, function () use ($kotaKode) {
+            $response = Http::timeout(10)->get("{$this->baseUrl}/districts/{$kotaKode}.json");
             
             if ($response->successful()) {
-                return $this->transformResponse($response->json(), true);
+                return $this->transformResponse($response->json());
+            }
+            
+            return [];
+        });
+
+        return response()->json($data);
+    }
+
+    /**
+     * Get list of kelurahan/desa by kecamatan code
+     */
+    public function kelurahan(Request $request)
+    {
+        $kecamatanKode = $request->query('kec');
+        
+        if (!$kecamatanKode) {
+            return response()->json(['error' => 'Kode kecamatan diperlukan'], 400);
+        }
+
+        $cacheKey = "wilayah_kelurahan_{$kecamatanKode}";
+        
+        $data = Cache::remember($cacheKey, 60 * 60 * 24, function () use ($kecamatanKode) {
+            $response = Http::timeout(10)->get("{$this->baseUrl}/villages/{$kecamatanKode}.json");
+            
+            if ($response->successful()) {
+                return $this->transformResponse($response->json());
             }
             
             return [];

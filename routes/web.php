@@ -31,14 +31,16 @@ use App\Http\Controllers\Api\OngkirController;
 | API Wilayah Routes (Proxy)
 |--------------------------------------------------------------------------
 |
-| Route untuk mengambil data wilayah Indonesia (provinsi, kota, kecamatan).
+| Route untuk mengambil data wilayah Indonesia (provinsi, kota, kecamatan, kelurahan).
 | Digunakan untuk form alamat pengiriman.
+| Menggunakan API dari https://wilayah.id/
 |
 */
 Route::prefix('api/wilayah')->name('api.wilayah.')->group(function () {
     Route::get('/provinsi', [WilayahController::class, 'provinsi'])->name('provinsi');
     Route::get('/kota', [WilayahController::class, 'kota'])->name('kota');
     Route::get('/kecamatan', [WilayahController::class, 'kecamatan'])->name('kecamatan');
+    Route::get('/kelurahan', [WilayahController::class, 'kelurahan'])->name('kelurahan');
 });
 
 /*
