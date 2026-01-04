@@ -36,7 +36,7 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3">
                             <i class="fas fa-shopping-bag text-primary-600"></i>
-                            <span class="font-semibold text-gray-900">{{ $keranjangs->count() }} Produk di Keranjang</span>
+                            <span class="font-semibold text-gray-900"><span id="cart-product-count">{{ $keranjangs->count() }}</span> Produk di Keranjang</span>
                         </div>
                         <form action="{{ route('pelanggan.keranjang.clear') }}" method="POST" 
                             onsubmit="return confirm('Kosongkan semua keranjang?')">
@@ -51,7 +51,7 @@
 
                 <!-- Item Keranjang -->
                 @foreach ($keranjangs as $keranjang)
-                    <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
+                    <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all cart-item" data-cart-id="{{ $keranjang->id }}">
                         <div class="flex items-start space-x-4">
                             <!-- Gambar Produk -->
                             <div class="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden shrink-0">
@@ -82,37 +82,42 @@
                                             @endif
                                         </div>
                                     </div>
-                                    <form action="{{ route('pelanggan.keranjang.destroy', $keranjang->id) }}" method="POST"
-                                        onsubmit="return confirm('Hapus produk ini dari keranjang?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-gray-400 hover:text-red-600 transition-colors">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" 
+                                        onclick="deleteCartItem({{ $keranjang->id }})"
+                                        class="text-gray-400 hover:text-red-600 transition-colors delete-btn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </div>
 
                                 <!-- Kontrol Jumlah -->
                                 <div class="flex items-center justify-between">
-                                    <form action="{{ route('pelanggan.keranjang.update', $keranjang->id) }}" method="POST" class="flex items-center space-x-3">
-                                        @csrf
-                                        @method('PUT')
-                                        <button type="button" onclick="decreaseQty(this)" 
-                                            class="w-8 h-8 rounded-lg border border-gray-300 hover:bg-gray-100 flex items-center justify-center">
+                                    <div class="flex items-center space-x-3 qty-control" data-cart-id="{{ $keranjang->id }}" data-max="{{ $keranjang->produk->stok }}" data-price="{{ $keranjang->harga }}">
+                                        <button type="button" onclick="updateQty({{ $keranjang->id }}, -1)" 
+                                            class="qty-btn w-8 h-8 rounded-lg border border-gray-300 hover:bg-gray-100 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                            {{ $keranjang->quantity <= 1 ? 'disabled' : '' }}>
                                             <i class="fas fa-minus text-xs"></i>
                                         </button>
-                                        <input type="number" name="quantity" value="{{ $keranjang->quantity }}" min="1" max="{{ $keranjang->produk->stok }}"
-                                            class="w-16 text-center border border-gray-300 rounded-lg py-1 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                            onchange="this.form.submit()">
-                                        <button type="button" onclick="increaseQty(this, {{ $keranjang->produk->stok }})" 
-                                            class="w-8 h-8 rounded-lg border border-gray-300 hover:bg-gray-100 flex items-center justify-center">
+                                        <input type="number" 
+                                            name="quantity" 
+                                            value="{{ $keranjang->quantity }}" 
+                                            min="1" 
+                                            max="{{ $keranjang->produk->stok }}"
+                                            data-cart-id="{{ $keranjang->id }}"
+                                            class="qty-input w-16 text-center border border-gray-300 rounded-lg py-1 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            onchange="updateQtyDirect({{ $keranjang->id }}, this.value)">
+                                        <button type="button" onclick="updateQty({{ $keranjang->id }}, 1)" 
+                                            class="qty-btn w-8 h-8 rounded-lg border border-gray-300 hover:bg-gray-100 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                            {{ $keranjang->quantity >= $keranjang->produk->stok ? 'disabled' : '' }}>
                                             <i class="fas fa-plus text-xs"></i>
                                         </button>
                                         <span class="text-sm text-gray-500">Maks. {{ $keranjang->produk->stok }}</span>
-                                    </form>
+                                        <span class="qty-loading hidden">
+                                            <i class="fas fa-spinner fa-spin text-primary-600"></i>
+                                        </span>
+                                    </div>
                                     <div class="text-right">
                                         <p class="text-sm text-gray-500 mb-1">Subtotal</p>
-                                        <p class="text-lg font-bold text-gray-900">Rp {{ number_format($keranjang->subtotal, 0, ',', '.') }}</p>
+                                        <p class="text-lg font-bold text-gray-900 item-subtotal">Rp {{ number_format($keranjang->subtotal, 0, ',', '.') }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -142,8 +147,8 @@
 
                 <div class="space-y-3 mb-6">
                     <div class="flex justify-between text-gray-700">
-                        <span>Total Harga ({{ $keranjangs->sum('quantity') }} barang)</span>
-                        <span class="font-semibold">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                        <span>Total Harga (<span id="total-items-count">{{ $keranjangs->sum('quantity') }}</span> barang)</span>
+                        <span class="font-semibold" id="grand-total-top">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between text-gray-700">
                         <span>Biaya Pengiriman</span>
@@ -156,7 +161,7 @@
                     <div class="flex justify-between items-center">
                         <span class="text-lg font-bold text-gray-900">Subtotal</span>
                         <div class="text-right">
-                            <div class="text-2xl font-bold text-primary-600">Rp {{ number_format($subtotal, 0, ',', '.') }}</div>
+                            <div class="text-2xl font-bold text-primary-600" id="grand-total-bottom">Rp {{ number_format($subtotal, 0, ',', '.') }}</div>
                         </div>
                     </div>
                 </div>
@@ -203,27 +208,238 @@
     </div>
 
     <script>
-        function decreaseQty(btn) {
-            const form = btn.closest('form');
-            const input = form.querySelector('input[name="quantity"]');
-            const min = parseInt(input.min);
-            const value = parseInt(input.value);
+        // CSRF Token untuk AJAX
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-            if (value > min) {
-                input.value = value - 1;
-                form.submit();
+        // Debounce function untuk mencegah request berlebihan
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Update quantity via AJAX
+        async function updateQty(cartId, change) {
+            const control = document.querySelector(`.qty-control[data-cart-id="${cartId}"]`);
+            const input = control.querySelector('.qty-input');
+            const loading = control.querySelector('.qty-loading');
+            const minusBtn = control.querySelector('.qty-btn:first-of-type');
+            const plusBtn = control.querySelector('.qty-btn:last-of-type');
+            const maxQty = parseInt(control.dataset.max);
+            
+            let newQty = parseInt(input.value) + change;
+            
+            // Validasi range
+            if (newQty < 1) newQty = 1;
+            if (newQty > maxQty) newQty = maxQty;
+            
+            // Jika tidak ada perubahan, skip
+            if (newQty === parseInt(input.value)) return;
+            
+            // Update UI langsung untuk responsiveness
+            input.value = newQty;
+            updateButtonStates(minusBtn, plusBtn, newQty, maxQty);
+            
+            // Show loading
+            loading.classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`{{ url('/pelanggan/keranjang') }}/${cartId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ quantity: newQty })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update subtotal item
+                    const cartItem = document.querySelector(`.cart-item[data-cart-id="${cartId}"]`);
+                    cartItem.querySelector('.item-subtotal').textContent = data.data.item_subtotal_formatted;
+                    
+                    // Update grand total
+                    updateTotals(data.data);
+                    
+                    // Show success toast
+                    showToast('success', data.message);
+                } else {
+                    // Revert input jika gagal
+                    input.value = parseInt(input.value) - change;
+                    updateButtonStates(minusBtn, plusBtn, parseInt(input.value), maxQty);
+                    showToast('error', data.message);
+                }
+            } catch (error) {
+                // Revert input jika error
+                input.value = parseInt(input.value) - change;
+                updateButtonStates(minusBtn, plusBtn, parseInt(input.value), maxQty);
+                showToast('error', 'Terjadi kesalahan. Silakan coba lagi.');
+            } finally {
+                loading.classList.add('hidden');
             }
         }
 
-        function increaseQty(btn, max) {
-            const form = btn.closest('form');
-            const input = form.querySelector('input[name="quantity"]');
-            const value = parseInt(input.value);
+        // Update quantity langsung dari input
+        const updateQtyDirect = debounce(async function(cartId, value) {
+            const control = document.querySelector(`.qty-control[data-cart-id="${cartId}"]`);
+            const input = control.querySelector('.qty-input');
+            const loading = control.querySelector('.qty-loading');
+            const minusBtn = control.querySelector('.qty-btn:first-of-type');
+            const plusBtn = control.querySelector('.qty-btn:last-of-type');
+            const maxQty = parseInt(control.dataset.max);
+            
+            let newQty = parseInt(value);
+            
+            // Validasi range
+            if (isNaN(newQty) || newQty < 1) newQty = 1;
+            if (newQty > maxQty) newQty = maxQty;
+            
+            input.value = newQty;
+            updateButtonStates(minusBtn, plusBtn, newQty, maxQty);
+            
+            // Show loading
+            loading.classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`{{ url('/pelanggan/keranjang') }}/${cartId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ quantity: newQty })
+                });
 
-            if (value < max) {
-                input.value = value + 1;
-                form.submit();
+                const data = await response.json();
+
+                if (data.success) {
+                    const cartItem = document.querySelector(`.cart-item[data-cart-id="${cartId}"]`);
+                    cartItem.querySelector('.item-subtotal').textContent = data.data.item_subtotal_formatted;
+                    updateTotals(data.data);
+                    showToast('success', data.message);
+                } else {
+                    showToast('error', data.message);
+                }
+            } catch (error) {
+                showToast('error', 'Terjadi kesalahan. Silakan coba lagi.');
+            } finally {
+                loading.classList.add('hidden');
             }
+        }, 500);
+
+        // Delete cart item via AJAX
+        async function deleteCartItem(cartId) {
+            if (!confirm('Hapus produk ini dari keranjang?')) return;
+            
+            const cartItem = document.querySelector(`.cart-item[data-cart-id="${cartId}"]`);
+            
+            // Add fade effect
+            cartItem.style.opacity = '0.5';
+            cartItem.style.pointerEvents = 'none';
+            
+            try {
+                const response = await fetch(`{{ url('/pelanggan/keranjang') }}/${cartId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Animate removal
+                    cartItem.style.transition = 'all 0.3s ease';
+                    cartItem.style.transform = 'translateX(100%)';
+                    cartItem.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        cartItem.remove();
+                        updateTotals(data.data);
+                        document.getElementById('cart-product-count').textContent = data.data.cart_count;
+                        
+                        // Jika keranjang kosong, reload halaman
+                        if (data.data.cart_count === 0) {
+                            location.reload();
+                        }
+                    }, 300);
+                    
+                    showToast('success', data.message);
+                } else {
+                    cartItem.style.opacity = '1';
+                    cartItem.style.pointerEvents = 'auto';
+                    showToast('error', data.message);
+                }
+            } catch (error) {
+                cartItem.style.opacity = '1';
+                cartItem.style.pointerEvents = 'auto';
+                showToast('error', 'Terjadi kesalahan. Silakan coba lagi.');
+            }
+        }
+
+        // Update button states (disabled/enabled)
+        function updateButtonStates(minusBtn, plusBtn, currentQty, maxQty) {
+            minusBtn.disabled = currentQty <= 1;
+            plusBtn.disabled = currentQty >= maxQty;
+        }
+
+        // Update totals display
+        function updateTotals(data) {
+            document.getElementById('total-items-count').textContent = data.total_items;
+            document.getElementById('grand-total-top').textContent = data.grand_total_formatted;
+            document.getElementById('grand-total-bottom').textContent = data.grand_total_formatted;
+            
+            // Update cart badge di navbar jika ada
+            const cartBadge = document.querySelector('.cart-badge');
+            if (cartBadge) {
+                cartBadge.textContent = data.cart_count;
+            }
+        }
+
+        // Toast notification
+        function showToast(type, message) {
+            // Hapus toast sebelumnya
+            const existingToast = document.querySelector('.ajax-toast');
+            if (existingToast) existingToast.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `ajax-toast fixed bottom-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-y-full opacity-0 ${
+                type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+            }`;
+            toast.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-full', 'opacity-0');
+            });
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
     </script>
 @endsection

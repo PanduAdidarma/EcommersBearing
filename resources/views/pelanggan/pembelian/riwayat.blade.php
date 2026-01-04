@@ -76,7 +76,7 @@
                                 </div>
                                 <div class="hidden sm:block">
                                     <p class="text-sm text-gray-500">Tanggal Pembelian</p>
-                                    <p class="font-medium text-gray-900">{{ $order->created_at->format('d M Y, H:i') }}</p>
+                                    <p class="font-medium text-gray-900">{{ $order->created_at->translatedFormat('d F Y, H:i') }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-3">
@@ -141,6 +141,13 @@
                                         <p class="font-bold text-gray-900">{{ $order->resi }}</p>
                                         <p class="text-xs text-gray-500 mt-1">{{ $order->kurir }}</p>
                                     </div>
+                                    <form action="{{ route('pelanggan.pembelian.confirm-delivered', $order->id) }}" method="POST" 
+                                        onsubmit="return confirm('Apakah Anda yakin pesanan sudah diterima?')">
+                                        @csrf
+                                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all text-sm">
+                                            <i class="fas fa-check-circle mr-2"></i>Pesanan Diterima
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         @endif

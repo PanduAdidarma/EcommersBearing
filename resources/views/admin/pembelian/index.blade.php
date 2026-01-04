@@ -136,7 +136,7 @@
                     <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Paid</option>
                     <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>Processing</option>
                     <option value="shipped" {{ request('status') == 'shipped' ? 'selected' : '' }}>Shipped</option>
-                    <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                    <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Selesai</option>
                     <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                 </select>
             </div>
@@ -234,7 +234,7 @@
                                         @break
                                     @case('delivered')
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <i class="fas fa-check-circle mr-1"></i>Delivered
+                                            <i class="fas fa-check-circle mr-1"></i>Selesai
                                         </span>
                                         @break
                                     @case('cancelled')

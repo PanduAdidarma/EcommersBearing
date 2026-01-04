@@ -26,16 +26,14 @@
             @auth
                 <!-- Tombol Keranjang -->
                 @php
-                    $cartCount = \App\Models\Keranjang::where('user_id', auth()->id())->sum('quantity');
+                    $cartCount = \App\Models\Keranjang::where('user_id', auth()->id())->count();
                 @endphp
                 <a href="{{ route('pelanggan.keranjang.index') }}"
-                    class="relative p-2 ml-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    class="relative p-2 ml-2 rounded-lg hover:bg-gray-100 transition-colors cart-icon">
                     <i class="fas fa-shopping-cart text-gray-600 text-lg"></i>
-                    @if($cartCount > 0)
-                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                            {{ $cartCount > 99 ? '99+' : $cartCount }}
-                        </span>
-                    @endif
+                    <span class="cart-badge absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-medium {{ $cartCount > 0 ? '' : 'hidden' }}">
+                        {{ $cartCount > 99 ? '99+' : $cartCount }}
+                    </span>
                 </a>
 
                 <!-- Notifikasi -->

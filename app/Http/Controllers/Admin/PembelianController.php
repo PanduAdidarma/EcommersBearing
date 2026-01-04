@@ -79,6 +79,11 @@ class PembelianController extends Controller
     {
         $order = Order::findOrFail($id);
 
+        // Cegah update status jika sudah shipped, delivered, atau cancelled
+        if (in_array($order->status, ['shipped', 'delivered', 'cancelled'])) {
+            return back()->with('error', 'Status order tidak dapat diubah lagi.');
+        }
+
         $request->validate([
             'status' => 'required|in:pending,paid,processing,shipped,delivered,cancelled',
             'keterangan' => 'nullable|string',

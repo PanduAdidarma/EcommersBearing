@@ -68,20 +68,20 @@
                         @foreach ($order->statuses->sortByDesc('created_at') as $index => $status)
                             <div class="relative {{ !$loop->last ? 'pb-8' : 'pb-0' }}">
                                 @if (!$loop->last)
-                                    <span class="absolute top-8 left-[-20px] -ml-px h-full w-0.5 bg-primary-600"></span>
+                                    <span class="absolute top-8 left-[-+20px] -ml-px h-full w-0.5 bg-primary-600"></span>
                                 @endif
                                 <div class="relative flex items-start">
                                     <span class="h-10 w-10 rounded-full flex items-center justify-center absolute -left-10 bg-primary-600 text-white {{ $loop->first ? 'ring-4 ring-primary-200' : '' }}">
                                         <i class="fas fa-{{ $statusIcons[$status->status] ?? 'info-circle' }}"></i>
                                     </span>
-                                    <div class="min-w-0 flex-1">
+                                    <div class="min-w-0 flex-1 ml-3">
                                         <p class="font-bold text-gray-900 {{ $loop->first ? 'text-primary-600' : '' }}">
                                             {{ $status->status_label ?? ucfirst($status->status) }}
                                         </p>
                                         @if ($status->keterangan)
                                             <p class="text-sm text-gray-600 mt-1">{{ $status->keterangan }}</p>
                                         @endif
-                                        <p class="text-xs text-gray-500 mt-1">{{ $status->created_at->format('d M Y, H:i') }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">{{ $status->created_at->translatedFormat('d F Y, H:i') }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -166,10 +166,23 @@
                                 @if ($order->estimasi_sampai)
                                     <div class="flex">
                                         <span class="text-gray-600 w-32">Estimasi Tiba</span>
-                                        <span class="text-gray-900 font-medium">: {{ $order->estimasi_sampai->format('d M Y') }}</span>
+                                        <span class="text-gray-900 font-medium">: {{ $order->estimasi_sampai->translatedFormat('d F Y') }}</span>
                                     </div>
                                 @endif
                             </div>
+                            
+                            <!-- Tombol Konfirmasi Pesanan Diterima -->
+                            @if ($order->status == 'shipped')
+                                <div class="mt-4 pt-4 border-t border-primary-200">
+                                    <form action="{{ route('pelanggan.pembelian.confirm-delivered', $order->id) }}" method="POST" 
+                                        onsubmit="return confirm('Apakah Anda yakin pesanan sudah diterima?')">
+                                        @csrf
+                                        <button type="submit" class="w-full px-4 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all">
+                                            <i class="fas fa-check-circle mr-2"></i>Konfirmasi Pesanan Diterima
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
                         </div>
                     @endif
                 </div>
@@ -202,7 +215,7 @@
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Dibayar Pada</span>
-                                    <span class="text-gray-900 font-medium">{{ $order->paid_at->format('d M Y, H:i') }}</span>
+                                    <span class="text-gray-900 font-medium">{{ $order->paid_at->translatedFormat('d F Y, H:i') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -216,17 +229,119 @@
                             </div>
                             @if (!$order->bukti_pembayaran)
                                 <form action="{{ route('pelanggan.pembelian.upload-bukti', $order->id) }}" 
-                                    method="POST" enctype="multipart/form-data" class="mt-4">
+                                    method="POST" enctype="multipart/form-data" class="mt-4" id="uploadBuktiForm">
                                     @csrf
-                                    <p class="text-sm text-gray-600 mb-2">Upload bukti pembayaran:</p>
-                                    <div class="flex items-center space-x-2">
+                                    <p class="text-sm text-gray-600 mb-3">Upload bukti pembayaran:</p>
+                                    
+                                    <!-- Upload Area -->
+                                    <div class="relative">
                                         <input type="file" name="bukti_pembayaran" accept="image/*" required
-                                            class="flex-1 text-sm border border-gray-300 rounded-lg">
-                                        <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700">
-                                            <i class="fas fa-upload mr-1"></i>Upload
+                                            id="buktiPembayaranInput"
+                                            class="hidden">
+                                        
+                                        <!-- Clickable Upload Box -->
+                                        <div id="uploadBox" 
+                                            class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 transition-all duration-200">
+                                            <div id="uploadPlaceholder">
+                                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                                                <p class="text-sm text-gray-600 mb-1">Klik untuk memilih file</p>
+                                                <p class="text-xs text-gray-400">atau drag & drop file di sini</p>
+                                                <p class="text-xs text-gray-400 mt-2">Format: JPG, PNG, JPEG (Maks. 2MB)</p>
+                                            </div>
+                                            <div id="filePreview" class="hidden">
+                                                <img id="previewImage" src="" alt="Preview" class="max-h-32 mx-auto rounded-lg mb-2">
+                                                <p id="fileName" class="text-sm text-gray-700 font-medium"></p>
+                                                <button type="button" id="removeFile" class="text-red-500 text-xs mt-1 hover:text-red-700">
+                                                    <i class="fas fa-times mr-1"></i>Hapus
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Submit Button -->
+                                        <button type="submit" id="submitBtn" 
+                                            class="w-full mt-3 px-4 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                            disabled>
+                                            <i class="fas fa-upload mr-2"></i>Upload Bukti Pembayaran
                                         </button>
                                     </div>
                                 </form>
+                                
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const fileInput = document.getElementById('buktiPembayaranInput');
+                                        const uploadBox = document.getElementById('uploadBox');
+                                        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+                                        const filePreview = document.getElementById('filePreview');
+                                        const previewImage = document.getElementById('previewImage');
+                                        const fileName = document.getElementById('fileName');
+                                        const removeFile = document.getElementById('removeFile');
+                                        const submitBtn = document.getElementById('submitBtn');
+                                        
+                                        // Click to open file dialog
+                                        uploadBox.addEventListener('click', function(e) {
+                                            if (e.target !== removeFile && !removeFile.contains(e.target)) {
+                                                fileInput.click();
+                                            }
+                                        });
+                                        
+                                        // Handle file selection
+                                        fileInput.addEventListener('change', function() {
+                                            handleFile(this.files[0]);
+                                        });
+                                        
+                                        // Drag and drop
+                                        uploadBox.addEventListener('dragover', function(e) {
+                                            e.preventDefault();
+                                            this.classList.add('border-primary-500', 'bg-primary-50');
+                                        });
+                                        
+                                        uploadBox.addEventListener('dragleave', function(e) {
+                                            e.preventDefault();
+                                            this.classList.remove('border-primary-500', 'bg-primary-50');
+                                        });
+                                        
+                                        uploadBox.addEventListener('drop', function(e) {
+                                            e.preventDefault();
+                                            this.classList.remove('border-primary-500', 'bg-primary-50');
+                                            const file = e.dataTransfer.files[0];
+                                            if (file && file.type.startsWith('image/')) {
+                                                fileInput.files = e.dataTransfer.files;
+                                                handleFile(file);
+                                            }
+                                        });
+                                        
+                                        // Remove file
+                                        removeFile.addEventListener('click', function(e) {
+                                            e.stopPropagation();
+                                            fileInput.value = '';
+                                            uploadPlaceholder.classList.remove('hidden');
+                                            filePreview.classList.add('hidden');
+                                            submitBtn.disabled = true;
+                                        });
+                                        
+                                        function handleFile(file) {
+                                            if (file) {
+                                                // Validate file size (2MB)
+                                                if (file.size > 2 * 1024 * 1024) {
+                                                    alert('Ukuran file maksimal 2MB');
+                                                    fileInput.value = '';
+                                                    return;
+                                                }
+                                                
+                                                // Show preview
+                                                const reader = new FileReader();
+                                                reader.onload = function(e) {
+                                                    previewImage.src = e.target.result;
+                                                    fileName.textContent = file.name;
+                                                    uploadPlaceholder.classList.add('hidden');
+                                                    filePreview.classList.remove('hidden');
+                                                    submitBtn.disabled = false;
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }
+                                    });
+                                </script>
                             @else
                                 <p class="text-sm text-green-600 mt-2">
                                     <i class="fas fa-check-circle mr-1"></i>Bukti pembayaran sudah diupload, menunggu verifikasi

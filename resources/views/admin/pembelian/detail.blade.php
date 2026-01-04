@@ -91,7 +91,7 @@
                                 <i class="fas fa-check-circle text-green-600 text-3xl"></i>
                             </div>
                             <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-800">
-                                Delivered
+                                Selesai
                             </span>
                             @break
                         @case('cancelled')
@@ -106,7 +106,7 @@
                 </div>
 
                 <!-- Update Status Form -->
-                @if (!in_array($order->status, ['delivered', 'cancelled']))
+                @if (!in_array($order->status, ['shipped', 'delivered', 'cancelled']))
                     <form action="{{ route('admin.pembelian.update-status', $order->id) }}" method="POST" class="mt-4 pt-4 border-t">
                         @csrf
                         @method('PATCH')
@@ -116,7 +116,6 @@
                             <option value="paid" {{ $order->status == 'paid' ? 'selected' : '' }}>Paid</option>
                             <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>Processing</option>
                             <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>Shipped</option>
-                            <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
                             <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                         </select>
                         <input type="text" name="keterangan" placeholder="Keterangan (opsional)" 
