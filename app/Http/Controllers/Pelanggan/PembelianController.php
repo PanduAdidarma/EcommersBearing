@@ -90,4 +90,28 @@ class PembelianController extends Controller
         
         return back()->with('success', 'Pesanan berhasil dibatalkan.');
     }
+
+    /**
+     * Konfirmasi pesanan sudah diterima oleh pelanggan.
+     * Mengubah status dari 'shipped' menjadi 'delivered'.
+     */
+    public function confirmDelivered($id)
+    {
+        $order = Order::where('user_id', auth()->id())->findOrFail($id);
+        
+        if ($order->status !== 'shipped') {
+            return back()->with('error', 'Pesanan tidak dapat dikonfirmasi.');
+        }
+        
+        $order->update(['status' => 'delivered']);
+        
+        // Tambahkan ke riwayat status
+        $order->statuses()->create([
+            'status' => 'delivered',
+            'keterangan' => 'Pesanan dikonfirmasi diterima oleh pelanggan',
+            'created_by' => auth()->id(),
+        ]);
+        
+        return back()->with('success', 'Pesanan berhasil dikonfirmasi sebagai diterima. Terima kasih telah berbelanja!');
+    }
 }

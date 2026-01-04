@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Keranjang;
 use App\Models\Produk;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -92,9 +93,9 @@ class KeranjangController extends Controller
      *
      * @param Request $request
      * @param int     $id ID keranjang
-     * @return RedirectResponse
+     * @return RedirectResponse|JsonResponse
      */
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $keranjang = Keranjang::where('user_id', auth()->id())->findOrFail($id);
 
@@ -104,10 +105,37 @@ class KeranjangController extends Controller
 
         // Validasi ketersediaan stok
         if ($keranjang->produk->stok < $request->quantity) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok tidak mencukupi. Stok tersedia: ' . $keranjang->produk->stok,
+                ], 400);
+            }
             return back()->with('error', 'Stok tidak mencukupi. Stok tersedia: ' . $keranjang->produk->stok);
         }
 
         $keranjang->update(['quantity' => $request->quantity]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            $subtotal = $keranjang->subtotal;
+            $grandTotal = Keranjang::getGrandTotal(auth()->id());
+            $totalItems = Keranjang::where('user_id', auth()->id())->sum('quantity');
+            $cartCount = Keranjang::where('user_id', auth()->id())->count();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Keranjang berhasil diupdate.',
+                'data' => [
+                    'item_subtotal' => $subtotal,
+                    'item_subtotal_formatted' => 'Rp ' . number_format($subtotal, 0, ',', '.'),
+                    'grand_total' => $grandTotal,
+                    'grand_total_formatted' => 'Rp ' . number_format($grandTotal, 0, ',', '.'),
+                    'total_items' => $totalItems,
+                    'cart_count' => $cartCount,
+                    'quantity' => $keranjang->quantity,
+                ],
+            ]);
+        }
 
         return back()->with('success', 'Keranjang berhasil diupdate.');
     }
@@ -115,13 +143,31 @@ class KeranjangController extends Controller
     /**
      * Menghapus item dari keranjang.
      *
+     * @param Request $request
      * @param int $id ID keranjang
-     * @return RedirectResponse
+     * @return RedirectResponse|JsonResponse
      */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $keranjang = Keranjang::where('user_id', auth()->id())->findOrFail($id);
         $keranjang->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            $grandTotal = Keranjang::getGrandTotal(auth()->id());
+            $totalItems = Keranjang::where('user_id', auth()->id())->sum('quantity');
+            $cartCount = Keranjang::where('user_id', auth()->id())->count();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil dihapus dari keranjang.',
+                'data' => [
+                    'grand_total' => $grandTotal,
+                    'grand_total_formatted' => 'Rp ' . number_format($grandTotal, 0, ',', '.'),
+                    'total_items' => $totalItems,
+                    'cart_count' => $cartCount,
+                ],
+            ]);
+        }
 
         return back()->with('success', 'Produk berhasil dihapus dari keranjang.');
     }

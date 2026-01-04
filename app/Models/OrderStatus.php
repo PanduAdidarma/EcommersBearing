@@ -81,4 +81,29 @@ class OrderStatus extends Model
     {
         return $query->orderBy('created_at', 'desc');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESSORS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Mendapatkan label teks untuk status dalam Bahasa Indonesia.
+     *
+     * @return string
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        $labels = [
+            'pending' => 'Menunggu Pembayaran',
+            'paid' => 'Sudah Dibayar',
+            'processing' => 'Sedang Diproses',
+            'shipped' => 'Dalam Pengiriman',
+            'delivered' => 'Pesanan Selesai',
+            'cancelled' => 'Dibatalkan',
+        ];
+
+        return $labels[$this->status] ?? ucfirst($this->status);
+    }
 }
