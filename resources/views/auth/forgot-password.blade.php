@@ -201,14 +201,14 @@
 
                     <!-- Kembali ke Login -->
                     <div class="text-center space-y-3">
-                        <a href="#" onclick="alert('Fitur login dalam pengembangan'); return false;"
+                        <a href="{{ route('login') }}"
                             class="inline-flex items-center text-sm text-primary-600 hover:text-primary-700 font-medium hover:underline">
                             <i class="fas fa-arrow-left mr-2"></i>Kembali ke halaman login
                         </a>
 
                         <p class="text-xs text-gray-600">
                             Belum punya akun?
-                            <a href="#" onclick="alert('Fitur registrasi dalam pengembangan'); return false;"
+                            <a href="{{ route('register') }}"
                                 class="text-primary-600 hover:text-primary-700 font-medium hover:underline ml-1">
                                 Daftar sekarang
                             </a>

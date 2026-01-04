@@ -231,20 +231,6 @@
                             </p>
                         </div>
                     </form>
-
-                    <!-- Login Sosial (Opsional) -->
-                    <div class="mt-6 grid grid-cols-2 gap-4">
-                        <button type="button"
-                            class="flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
-                            <i class="fab fa-google text-red-500 mr-2"></i>
-                            <span class="text-sm font-medium text-gray-700">Google</span>
-                        </button>
-                        <button type="button"
-                            class="flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
-                            <i class="fab fa-facebook text-primary-600 mr-2"></i>
-                            <span class="text-sm font-medium text-gray-700">Facebook</span>
-                        </button>
-                    </div>
                 </div>
                 <footer class="mt-8 text-center text-sm text-gray-600 pb-6">
                     <p>&copy; {{ date('Y') }} Bearing Shop. All rights reserved.</p>
